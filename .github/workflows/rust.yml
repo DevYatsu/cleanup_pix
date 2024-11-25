@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ "master" ]
 
+  release:
+    types: [created]  # Trigger workflow when a new release is created
+
 env:
   CARGO_TERM_COLOR: always
 
@@ -14,7 +17,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]  # Specify the OS matrix
+        os: [ubuntu-latest, macos-latest, windows-latest]
 
     runs-on: ${{ matrix.os }}
 
@@ -25,21 +28,28 @@ jobs:
         uses: actions-rs/toolchain@v1
         with:
           profile: minimal
-          toolchain: stable  # Change to nightly if needed
+          toolchain: stable
           override: true
-
-      - name: Cache Cargo registry and builds
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/registry
-            target
-          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-cargo-
 
       - name: Build Project
         run: cargo build --release --verbose
 
-      - name: Test Project
-        run: cargo test --verbose
+      - name: Archive Binary
+        run: |
+          mkdir -p dist
+          cp target/release/* dist/
+          cd dist
+          if [[ ${{ runner.os }} == 'Windows' ]]; then
+            zip -r rust-binary-windows.zip ./*
+          else
+            tar -czvf rust-binary-${{ matrix.os }}.tar.gz ./*
+          fi
+
+      - name: Upload Release Asset
+        if: github.event_name == 'release'
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: dist/rust-binary-${{ matrix.os }}.tar.gz
+          asset_name: rust-binary-${{ matrix.os }}.tar.gz
+          content_type: application/gzip

@@ -1,5 +1,5 @@
 [package]
-name = "rmv_pix"
+name = "cleanup_pix"
 version = "0.1.0"
 edition = "2021"
 

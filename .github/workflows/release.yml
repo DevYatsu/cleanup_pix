@@ -1,9 +1,8 @@
 name: Release Build Binaries
 
 on:
-  push:
-    tags:
-      - v[0-9]+.*
+  release:
+    types: [created] # Runs when a new release is created
 
 jobs:
   release:

@@ -25,6 +25,10 @@ jobs:
             os: macos-latest
             target: x86_64-apple-darwin
 
+          - build: windows-gnu
+            os: windows-latest
+            target: x86_64-pc-windows-gnu
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -51,8 +55,7 @@ jobs:
       - name: Build archive
         shell: bash
         run: |
-          # Replace with the name of your binary
-          binary_name="<BINARY_NAME>"
+          binary_name="cleanup_pix"
 
           dirname="$binary_name-${{ env.VERSION }}-${{ matrix.target }}"
           mkdir "$dirname"
